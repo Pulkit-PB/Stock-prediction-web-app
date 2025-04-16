@@ -9,6 +9,7 @@ import pandas as pd
 from sklearn.preprocessing import MinMaxScaler
 from keras.models import load_model
 import datetime
+model = get_model(model_name)
 
 #import nltk
 #from nltk.tokenize import word_tokenize
@@ -208,7 +209,7 @@ def index():
     if request.method == 'POST':
         ticker = request.form['ticker'].strip().upper()
         model_name = request.form['model']
-        model = get_model(model_name)
+       
 
         try:
             df = yf.download(ticker, start="2012-01-01", end=datetime.date.today())

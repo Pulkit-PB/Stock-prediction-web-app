@@ -10,6 +10,94 @@ from sklearn.preprocessing import MinMaxScaler
 from keras.models import load_model
 import datetime
 
+import nltk
+from nltk.tokenize import word_tokenize
+from nltk.corpus import stopwords
+nltk.download('punkt')
+nltk.download('stopwords')
+
+company_to_ticker = {
+    # US Stocks
+    "apple": "AAPL",
+    "microsoft": "MSFT",
+    "google": "GOOGL",
+    "amazon": "AMZN",
+    "tesla": "TSLA",
+    "facebook": "META",
+    "twitter": "TWTR",
+    "netflix": "NFLX",
+    "walmart": "WMT",
+    "intel": "INTC",
+    "coca-cola": "KO",
+    "nike": "NKE",
+    "disney": "DIS",
+    "starbucks": "SBUX",
+    "pepsi": "PEP",
+    "boeing": "BA",
+    "nvidia": "NVDA",
+    "spotify": "SPOT",
+    "salesforce": "CRM",
+    
+    # Indian Stocks (NSE)
+    "tcs": "TCS.NS",
+    "infosys": "INFY.NS",
+    "reliance": "RELIANCE.NS",
+    "hdfc": "HDFC.NS",
+    "icici": "ICICIBANK.NS",
+    "sbi": "SBIN.NS",
+    "axis bank": "AXISBANK.NS",
+    "bharti airtel": "BHARTIARTL.NS",
+    "sun pharma": "SUNPHARMA.NS",
+    "l&t": "LT.NS",
+    "maruti": "MARUTI.NS",
+    "hindalco": "HINDALCO.NS",
+    "kotak mahindra": "KOTAKBANK.NS",
+    "nestle india": "NESTLEIND.NS",
+    "tata motors": "TATAMOTORS.NS",
+    "ultratech cement": "ULTRACEMCO.NS",
+    "mahilakshmi": "MAHINDCIE.NS",
+    "shree cement": "SHREECEM.NS",
+    
+    # UK Stocks
+    "vodafone": "VOD.L",
+    "tesco": "TSCO.L",
+    "barclays": "BARC.L",
+    "unilever": "ULVR.L",
+    "bp": "BP.L",
+    "glaxo smithkline": "GSK.L",
+    
+    # European Stocks
+    "nestle": "NESN.SW",  # Switzerland
+    "siemens": "SIE.DE",  # Germany
+    "l'oréal": "OR.PA",  # France
+    "sanofi": "SAN.PA",  # France
+    "sap": "SAP.DE",  # Germany
+    "asml": "ASML.AS",  # Netherlands
+    
+    # Chinese Stocks
+    "alibaba": "BABA",
+    "tencent": "0700.HK",
+    "baidu": "BIDU",
+    "jd.com": "JD",
+    "meituan": "3690.HK",
+    "pinduoduo": "PDD",
+    
+    # Other global stocks
+    "sony": "6758.T",  # Japan
+    "toshiba": "6502.T",  # Japan
+    "canon": "7751.T",  # Japan
+    "lg electronics": "066570.KS",  # South Korea
+    "samsung electronics": "005930.KS",  # South Korea
+    "bayer": "BAYN.DE",  # Germany
+    "abbvie": "ABBV",  # USA
+    "ford": "F",  # USA
+    "general electric": "GE",  # USA
+    "abbott laboratories": "ABT",  # USA
+    "general motors": "GM",  # USA
+    "3m": "MMM"  # USA
+}
+
+
 app = Flask(__name__)
 
 # Load models
@@ -69,8 +157,49 @@ def get_history_plot(df):
     plt.close()
     return img_base64
 
+
+def get_ticker_from_query(query):
+    stop_words = set(stopwords.words('english'))
+    words = word_tokenize(query.lower())
+    filtered_words = [word for word in words if word not in stop_words]
+
+    for word in filtered_words:
+        if word in company_to_ticker:
+            return company_to_ticker[word]
+    return None
+
+def get_stock_info(ticker):
+    try:
+        stock = yf.Ticker(ticker)
+        info = stock.info
+        return {
+            "ticker": ticker,
+            "name": info.get('shortName', 'N/A'),
+            "current_price": info.get('currentPrice', 'N/A'),
+            "market_cap": info.get('marketCap', 'N/A'),
+            "pe_ratio": info.get('trailingPE', 'N/A'),
+            "sector": info.get('sector', 'N/A'),
+            "industry": info.get('industry', 'N/A')
+        }
+    except Exception as e:
+        return {"error": f"Error fetching data for {ticker}: {str(e)}"}
+    
+@app.route('/query', methods=['GET', 'POST'])
+def query():
+    result = None
+    if request.method == 'POST':
+        user_query = request.form['query']
+        ticker = get_ticker_from_query(user_query)
+        if ticker:
+            result = get_stock_info(ticker)
+        else:
+            result = {"error": "Could not find a valid company in your query."}
+    return render_template('query.html', result=result)
+
+
 @app.route('/', methods=['GET', 'POST'])
 def index():
+    ticker = None
     predicted_price = None
     error = None
     graph_img = None

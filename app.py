@@ -10,11 +10,11 @@ from sklearn.preprocessing import MinMaxScaler
 from keras.models import load_model
 import datetime
 
-import nltk
-from nltk.tokenize import word_tokenize
-from nltk.corpus import stopwords
-nltk.download('punkt')
-nltk.download('stopwords')
+#import nltk
+#from nltk.tokenize import word_tokenize
+#from nltk.corpus import stopwords
+#nltk.download('punkt')
+#nltk.download('stopwords')
 
 company_to_ticker = {
     # US Stocks
@@ -184,7 +184,7 @@ def get_stock_info(ticker):
     except Exception as e:
         return {"error": f"Error fetching data for {ticker}: {str(e)}"}
     
-@app.route('/query', methods=['GET', 'POST'])
+'''@app.route('/query', methods=['GET', 'POST'])
 def query():
     result = None
     if request.method == 'POST':
@@ -194,7 +194,7 @@ def query():
             result = get_stock_info(ticker)
         else:
             result = {"error": "Could not find a valid company in your query."}
-    return render_template('query.html', result=result)
+    return render_template('query.html', result=result)'''
 
 
 @app.route('/', methods=['GET', 'POST'])

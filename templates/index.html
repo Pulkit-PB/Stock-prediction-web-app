@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Stock Prediction</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Roboto Mono', monospace;
+            background: #011a34;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+        }
+        .container {
+            background: rgb(229, 242, 188);
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+            width: 90%;
+            max-width: 600px;
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+        form {
+            margin-top: 20px;
+        }
+        input, select, button {
+            width: 100%;
+            padding: 12px;
+            margin: 8px 0;
+            border-radius: 8px;
+            border: 1px solid #ccc;
+            font-size: 16px;
+        }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            cursor: pointer;
+            transition: 0.3s ease;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        .result {
+            text-align: center;
+            margin-top: 20px;
+        }
+        .error {
+            color: red;
+        }
+        .charts {
+            margin-top: 20px;
+        }
+        .charts img {
+            width: 100%;
+            border-radius: 10px;
+            margin-bottom: 15px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📈 Stock Price Prediction</h1>
+        <form method="POST">
+            <label for="ticker">Enter Stock Ticker (e.g., AAPL, TCS.NS):</label>
+            <input type="text" id="ticker" name="ticker" required>
+    
+            <label for="model">Select Model:</label>
+            <select id="model" name="model">
+                <option value="LSTM">LSTM</option>
+                <option value="BiLSTM">BiLSTM</option>
+            </select>
+    
+            <button type="submit">Predict</button>
+        </form>
+    
+        {% if error %}
+            <p class="error">{{ error }}</p>
+        {% endif %}
+    
+        {% if predicted_price %}
+            <div class="result">
+                <h2>Predicted Stock Price for {{ ticker }}: ₹{{ predicted_price | round(2) }}</h2>
+            </div>
+        {% endif %}
+    
+        <div class="charts">
+            {% if graph_img %}
+                <h3>📊 Prediction Chart for {{ ticker }}:</h3>
+                <img src="data:image/png;base64,{{ graph_img }}" alt="Prediction Chart">
+            {% endif %}
+    
+            {% if history_img %}
+                <h3>📉 Historical Chart for {{ ticker }}:</h3>
+                <img src="data:image/png;base64,{{ history_img }}" alt="History Chart">
+            {% endif %}
+        </div>
+    </div>
+    
+</body>
+</html>
